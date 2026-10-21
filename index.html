@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F2904F">
+<title>화이팅 달력</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: one phone-width column. Cheer stage (character + bubble) on top, month grid, then the selected day's memo. Month hue (--h) drives every token. */
+:root {
+  --h: 15; --s: 65%;
+  --bg: hsl(var(--h) 35% 97%);
+  --surface: hsl(var(--h) 40% 99.5%);
+  --ink: hsl(var(--h) 22% 16%);
+  --muted: hsl(var(--h) 10% 42%);
+  --line: hsl(var(--h) 22% 88%);
+  --accent: hsl(var(--h) var(--s) 46%);
+  --accent-ink: hsl(var(--h) 40% 99%);
+  --soft: hsl(var(--h) 75% 91%);
+  --soft2: hsl(calc(var(--h) + 30) 80% 95%);
+  --sun: hsl(358 70% 50%);
+  --sat: hsl(218 70% 50%);
+  --shadow: hsl(var(--h) 30% 30% / .12);
+  --font-display: "Jua", "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: hsl(var(--h) 18% 9%);
+    --surface: hsl(var(--h) 16% 13%);
+    --ink: hsl(var(--h) 25% 93%);
+    --muted: hsl(var(--h) 10% 66%);
+    --line: hsl(var(--h) 12% 23%);
+    --accent: hsl(var(--h) var(--s) 66%);
+    --accent-ink: hsl(var(--h) 35% 10%);
+    --soft: hsl(var(--h) 32% 20%);
+    --soft2: hsl(calc(var(--h) + 30) 28% 15%);
+    --sun: hsl(358 85% 72%);
+    --sat: hsl(215 90% 74%);
+    --shadow: hsl(0 0% 0% / .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: hsl(var(--h) 18% 9%);
+  --surface: hsl(var(--h) 16% 13%);
+  --ink: hsl(var(--h) 25% 93%);
+  --muted: hsl(var(--h) 10% 66%);
+  --line: hsl(var(--h) 12% 23%);
+  --accent: hsl(var(--h) var(--s) 66%);
+  --accent-ink: hsl(var(--h) 35% 10%);
+  --soft: hsl(var(--h) 32% 20%);
+  --soft2: hsl(calc(var(--h) + 30) 28% 15%);
+  --sun: hsl(358 85% 72%);
+  --sat: hsl(215 90% 74%);
+  --shadow: hsl(0 0% 0% / .35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  word-break: keep-all; transition: background .5s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.app {
+  max-width: 480px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 14px 28px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+
+/* header */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.month-nav { display: flex; align-items: center; gap: 6px; }
+.round {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--line); background: var(--surface);
+  display: grid; place-items: center; font-size: 20px; line-height: 1;
+}
+.title { min-width: 92px; text-align: center; }
+.title .yr { display: block; font-size: 12.5px; color: var(--muted); letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.title .mo { display: block; font-family: var(--font-display); font-size: 38px; line-height: 1; color: var(--ink); }
+.actions { display: flex; gap: 6px; }
+.pill {
+  height: 36px; padding: 0 14px; border-radius: 999px;
+  border: 1px solid var(--line); background: var(--surface);
+  font-size: 14px; font-weight: 500; white-space: nowrap;
+}
+.pill.solid { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+
+/* cheer stage */
+.stage {
+  position: relative; overflow: hidden; border-radius: 26px;
+  background: linear-gradient(160deg, var(--soft), var(--soft2));
+  padding: 14px 14px 16px;
+  display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 6px 10px; align-items: center;
+}
+.sky { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.stage > *:not(.sky) { position: relative; z-index: 1; }
+.tag {
+  grid-column: 1 / -1; justify-self: start;
+  font-size: 12.5px; font-weight: 600; color: var(--accent);
+  background: var(--surface); border-radius: 999px; padding: 3px 11px;
+  box-shadow: 0 1px 0 var(--shadow);
+}
+.char-btn {
+  border: 0; background: none; padding: 26px 0 0; position: relative;
+  display: block; width: 100%; border-radius: 20px;
+}
+.char-btn svg { display: block; width: 100%; height: auto; overflow: visible; }
+.shout {
+  position: absolute; top: 0; left: 50%; z-index: 2;
+  font-family: var(--font-display); font-size: 30px; line-height: 1; white-space: nowrap;
+  color: var(--accent);
+  -webkit-text-stroke: 6px var(--surface); paint-order: stroke fill;
+  transform: translateX(-50%) rotate(-7deg);
+}
+.shout.pop { animation: pop .55s cubic-bezier(.3,1.6,.5,1); }
+@keyframes pop {
+  0% { transform: translateX(-50%) rotate(-7deg) scale(.3); opacity: 0; }
+  100% { transform: translateX(-50%) rotate(-7deg) scale(1); opacity: 1; }
+}
+.say { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.bubble {
+  position: relative; background: var(--surface); border-radius: 18px;
+  padding: 12px 14px; font-family: var(--font-display); font-size: 17px; line-height: 1.5;
+  box-shadow: 0 2px 10px var(--shadow); min-height: 78px; display: flex; align-items: center;
+}
+.bubble::before {
+  content: ""; position: absolute; left: -9px; top: 50%; margin-top: -9px;
+  border: 9px solid transparent; border-left: 0; border-right-color: var(--surface);
+}
+.bubble.fade { animation: fadein .35s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.link-btn {
+  align-self: flex-start; border: 0; background: none; padding: 2px 4px;
+  color: var(--accent); font-weight: 600; font-size: 14px; text-decoration: underline; text-underline-offset: 3px;
+}
+.stage-foot { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+.more { width: 100%; height: 44px; font-size: 15px; font-family: var(--font-display); font-weight: 400; }
+.goal {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border-radius: 14px; padding: 4px 4px 4px 12px;
+}
+.goal label { font-size: 13px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+.goal input {
+  flex: 1; min-width: 0; border: 0; background: transparent; height: 38px; padding: 0 8px;
+  font-size: 15px;
+}
+.goal input:focus { outline: none; }
+.goal:focus-within { box-shadow: 0 0 0 2px var(--accent); }
+
+/* character motion */
+.bob { animation: bob 1.6s ease-in-out infinite; transform-box: view-box; transform-origin: 110px 186px; }
+@keyframes bob { 0%,100% { transform: translateY(0) scale(1,1); } 50% { transform: translateY(-6px) scale(.98,1.02); } }
+.armL, .armR { transform-box: view-box; }
+.armL { transform-origin: 68px 128px; animation: waveL .8s ease-in-out infinite alternate; }
+.armR { transform-origin: 152px 128px; animation: waveR .8s ease-in-out infinite alternate; }
+@keyframes waveL { from { transform: rotate(-14deg); } to { transform: rotate(10deg); } }
+@keyframes waveR { from { transform: rotate(14deg); } to { transform: rotate(-10deg); } }
+.shadow { transform-box: view-box; transform-origin: 110px 196px; animation: shadow 1.6s ease-in-out infinite; }
+@keyframes shadow { 0%,100% { transform: scaleX(1); opacity: .22; } 50% { transform: scaleX(.88); opacity: .15; } }
+.float { animation: floaty 2.4s ease-in-out infinite; transform-box: view-box; transform-origin: center; }
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.jump .bob { animation: jump .6s cubic-bezier(.3,.7,.4,1); }
+.jump .armL, .jump .armR { animation-duration: .18s; }
+@keyframes jump {
+  0% { transform: translateY(0) scale(1.06,.92); }
+  35% { transform: translateY(-26px) scale(.95,1.06); }
+  70% { transform: translateY(0) scale(1.05,.95); }
+  100% { transform: translateY(0) scale(1,1); }
+}
+.enter { animation: enter .55s cubic-bezier(.3,1.5,.5,1); }
+@keyframes enter { from { transform: translateY(30px) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* particles */
+.p { position: absolute; top: -12%; width: var(--sz, 10px); height: var(--sz, 10px); opacity: .9; }
+.p svg { width: 100%; height: 100%; display: block; }
+.p.fall { animation: fall var(--dur, 9s) linear infinite; animation-delay: var(--del, 0s); }
+.p.rain { animation: fall var(--dur, 1.6s) linear infinite; animation-delay: var(--del, 0s); }
+.p.rise { top: auto; bottom: -10%; animation: rise var(--dur, 8s) ease-in infinite; animation-delay: var(--del, 0s); }
+.p.twinkle { animation: twinkle var(--dur, 2.4s) ease-in-out infinite; animation-delay: var(--del, 0s); }
+@keyframes fall {
+  0% { transform: translate(0, 0) rotate(0); }
+  50% { transform: translate(14px, 60cqh) rotate(160deg); }
+  100% { transform: translate(-6px, 125cqh) rotate(320deg); }
+}
+@keyframes rise { 0% { transform: translate(0,0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translate(10px, -120cqh); opacity: 0; } }
+@keyframes twinkle { 0%,100% { transform: scale(.5); opacity: .3; } 50% { transform: scale(1); opacity: 1; } }
+.sky { container-type: size; }
+.moon {
+  position: absolute; top: 12px; right: 16px; width: 46px; height: 46px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%, #FFF6CF, #FFE08A 60%, #F5C95B);
+  box-shadow: 0 0 24px 6px rgba(255, 224, 138, .45);
+}
+
+/* burst */
+.burst { position: absolute; left: 50%; top: 58%; width: 0; height: 0; pointer-events: none; z-index: 3; }
+.burst i {
+  position: absolute; width: 9px; height: 9px; border-radius: 3px; background: var(--c);
+  animation: burst .9s cubic-bezier(.2,.7,.3,1) forwards;
+}
+@keyframes burst {
+  0% { transform: translate(0,0) rotate(0) scale(.6); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(260deg) scale(1); opacity: 0; }
+}
+
+/* calendar */
+.cal {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+  padding: 10px 8px 8px; touch-action: pan-y;
+}
+.wk, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.wk span {
+  text-align: center; font-size: 12px; font-weight: 600; color: var(--muted);
+  padding-bottom: 6px; letter-spacing: .04em;
+}
+.wk span:first-child { color: var(--sun); }
+.wk span:last-child { color: var(--sat); }
+.grid { gap: 2px; }
+.cell {
+  border: 0; background: none; border-radius: 12px; min-height: 56px; min-width: 0;
+  padding: 5px 1px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.cell .num {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums;
+}
+.cell.sun .num, .cell.hol .num { color: var(--sun); }
+.cell.sat .num { color: var(--sat); }
+.cell.today .num { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.cell.sel { background: var(--soft); }
+.cell .hn {
+  max-width: 100%; font-size: 9.5px; line-height: 1.2; color: var(--sun);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px;
+}
+.cell .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+.cell.other { opacity: .32; pointer-events: none; }
+
+/* day panel */
+.day {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
+  padding: 14px; display: flex; flex-direction: column; gap: 10px;
+}
+.day-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.day-head strong { font-size: 16px; font-weight: 600; }
+.chip { font-size: 12px; font-weight: 600; color: var(--sun); border: 1px solid currentColor; border-radius: 999px; padding: 1px 9px; }
+.day textarea {
+  width: 100%; min-height: 92px; resize: vertical; border: 1px solid var(--line); border-radius: 14px;
+  background: var(--bg); padding: 10px 12px; font-size: 15px; line-height: 1.55;
+}
+.day textarea:focus { outline: none; border-color: var(--accent); }
+.foot { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.6; }
+
+/* sheet */
+.sheet-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
+.backdrop { position: absolute; inset: 0; background: hsl(var(--h) 20% 8% / .45); border: 0; }
+.sheet {
+  position: relative; width: 100%; max-width: 480px; background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  padding: 18px max(18px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 14px; animation: up .3s ease;
+}
+@keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 22px; }
+.sheet p { margin: 0; color: var(--muted); font-size: 14px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 13px; font-weight: 600; }
+.field input, .field textarea {
+  border: 1px solid var(--line); border-radius: 12px; background: var(--bg);
+  padding: 10px 12px; font-size: 15px;
+}
+.field textarea { min-height: 72px; resize: vertical; line-height: 1.5; }
+.field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
+.sheet .row { display: flex; gap: 8px; }
+.sheet .row .pill { flex: 1; height: 44px; }
+.save-note { font-size: 12px; color: var(--muted); }
+
+@media (max-width: 380px) {
+  .stage { grid-template-columns: 116px minmax(0, 1fr); }
+  .shout { font-size: 24px; }
+  .bubble { font-size: 15.5px; padding: 10px 12px; }
+  .title .mo { font-size: 32px; }
+  .pill { padding: 0 11px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition: none !important; }
+  .p { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="month-nav">
+      <button class="round" id="prev" aria-label="이전 달">‹</button>
+      <div class="title" aria-live="polite"><span class="yr" id="yr">2026</span><span class="mo" id="mo">10월</span></div>
+      <button class="round" id="next" aria-label="다음 달">›</button>
+    </div>
+    <div class="actions">
+      <button class="pill" id="todayBtn">오늘</button>
+      <button class="pill" id="dreamBtn">내 꿈</button>
+    </div>
+  </header>
+
+  <section class="stage" id="stage" aria-label="이달의 응원 캐릭터">
+    <div class="sky" id="sky"></div>
+    <span class="tag" id="tag">10월 응원단</span>
+    <button class="char-btn" id="charBtn" aria-label="캐릭터를 눌러 응원 받기">
+      <span class="shout" id="shout">화이팅!</span>
+      <span id="charHost"></span>
+      <span class="burst" id="burst"></span>
+    </button>
+    <div class="say">
+      <div class="bubble" id="bubble" aria-live="polite"></div>
+      <button class="link-btn" id="askDream" hidden>내 꿈 알려 주기</button>
+    </div>
+    <div class="stage-foot">
+      <button class="pill solid more" id="moreBtn">한 번 더 응원해 줘</button>
+      <div class="goal">
+        <label for="goal" id="goalLabel">10월 목표</label>
+        <input id="goal" type="text" maxlength="60" placeholder="이번 달에 해내고 싶은 한 가지" autocomplete="off">
+      </div>
+    </div>
+  </section>
+
+  <section class="cal" id="cal" aria-label="달력">
+    <div class="wk"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="day" aria-label="선택한 날짜">
+    <div class="day-head"><strong id="dayTitle">10월 21일 수요일</strong><span class="chip" id="dayHol" hidden></span></div>
+    <textarea id="memo" placeholder="이날 할 일이나 기억할 것을 적어 두세요"></textarea>
+  </section>
+
+  <p class="foot"><span id="saveState">이 브라우저에 저장돼요</span><br>공휴일은 2026~2027년이 반영돼 있어요. 달력은 좌우로 밀어서 넘길 수 있어요.</p>
+</div>
+
+<div class="sheet-wrap" id="sheetWrap" hidden>
+  <button class="backdrop" id="backdrop" aria-label="닫기"></button>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <h2 id="sheetTitle">응원단에게 알려 주기</h2>
+    <p>적어 둔 꿈은 열두 달 캐릭터가 돌아가며 불러 줘요.</p>
+    <div class="field">
+      <label for="nameIn">불러 줄 이름</label>
+      <input id="nameIn" type="text" maxlength="12" autocomplete="off">
+    </div>
+    <div class="field">
+      <label for="dreamIn">내 꿈</label>
+      <textarea id="dreamIn" maxlength="80" placeholder="예: 내 이름으로 된 일로 하루를 채우는 사람"></textarea>
+    </div>
+    <div class="row">
+      <button class="pill" id="cancelBtn">닫기</button>
+      <button class="pill solid" id="saveBtn">저장하고 응원 받기</button>
+    </div>
+    <span class="save-note" id="saveNote"></span>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- holidays (2026, 2027) ---------- */
+  const HOLIDAYS = {
+    "2026-01-01": "신정", "2026-02-16": "설날 연휴", "2026-02-17": "설날", "2026-02-18": "설날 연휴",
+    "2026-03-01": "삼일절", "2026-03-02": "대체공휴일", "2026-05-01": "노동절", "2026-05-05": "어린이날",
+    "2026-05-24": "부처님오신날", "2026-05-25": "대체공휴일", "2026-06-03": "지방선거", "2026-06-06": "현충일",
+    "2026-07-17": "제헌절", "2026-08-15": "광복절", "2026-08-17": "대체공휴일",
+    "2026-09-24": "추석 연휴", "2026-09-25": "추석", "2026-09-26": "추석 연휴",
+    "2026-10-03": "개천절", "2026-10-05": "대체공휴일", "2026-10-09": "한글날", "2026-12-25": "성탄절",
+    "2027-01-01": "신정", "2027-02-06": "설날 연휴", "2027-02-07": "설날", "2027-02-08": "설날 연휴", "2027-02-09": "대체공휴일",
+    "2027-03-01": "삼일절", "2027-05-01": "노동절", "2027-05-03": "대체공휴일", "2027-05-05": "어린이날",
+    "2027-05-13": "부처님오신날", "2027-06-06": "현충일", "2027-07-17": "제헌절", "2027-07-19": "대체공휴일",
+    "2027-08-15": "광복절", "2027-08-16": "대체공휴일", "2027-09-14": "추석 연휴", "2027-09-15": "추석", "2027-09-16": "추석 연휴",
+    "2027-10-03": "개천절", "2027-10-04": "대체공휴일", "2027-10-09": "한글날", "2027-10-11": "대체공휴일",
+    "2027-12-25": "성탄절", "2027-12-27": "대체공휴일"
+  };
+
+  /* ---------- twelve cheer friends ---------- */
+  const CREW = [
+    { kind: "bear", name: "눈곰이", sp: "흰곰", h: 225, s: "55%", body: "#F3F6FB", belly: "#FFFFFF", pom: "#6F8EF2", fx: "snow", acc: "scarf", scarf: ["#E85D75", "#FFFFFF"],
+      lines: ["새해 첫 장이야, {v}! 올해는 네가 주인공이야.", "“{d}” 그 꿈, 올해 달력에 같이 적어 두자.", "추운 날엔 천천히 가도 돼. 멈추지만 않으면 돼.", "이번 달 목표 “{g}”, 첫 걸음부터 응원할게.", "눈 쌓이듯 조금씩. 그게 제일 단단해."] },
+    { kind: "bunny", name: "토리", sp: "토끼", h: 345, s: "60%", body: "#FFD6E0", belly: "#FFF2F5", pom: "#FF6F91", fx: "heart", acc: "heart",
+      lines: ["짧은 달이니까 더 가볍게 뛰어 보자, {v}!", "“{d}” 그 꿈 얘기할 때 네 눈이 반짝여.", "설 연휴엔 푹 쉬고, 다시 깡총 시작하자.", "“{g}”, 이번 달에 딱 한 번만 더 해 보자.", "넘어져도 괜찮아. 다시 뛰는 게 토끼 특기야."] },
+    { kind: "sprout", name: "싹이", sp: "새싹", h: 125, s: "45%", body: "#C3E8A6", belly: "#EDF8E1", pom: "#FF8FB1", fx: "petal",
+      lines: ["새 학기, 새 싹! {v}, 너도 지금 자라는 중이야.", "“{d}” 그 꿈도 땅속에서 뿌리 내리는 중이야.", "눈에 안 보여도 자라고 있어. 진짜야.", "“{g}”, 봄비처럼 조금씩 꾸준히 가 보자.", "오늘은 물 한 컵만큼만 해도 충분해."] },
+    { kind: "chick", name: "삐약이", sp: "병아리", h: 48, s: "80%", body: "#FFE15C", belly: null, pom: "#FF9F1C", fx: "forsythia", acc: "shell", mouth: "#FF9F1C",
+      lines: ["삐약! {v}, 오늘도 나왔구나. 그거면 반은 한 거야.", "“{d}”, 지금 껍질 깨고 나오는 중이야. 조금만 더!", "작은 날개라도 매일 펴 보면 커져.", "“{g}”, 이번 주에 한 칸만 채워 보자.", "개나리처럼 환하게, 오늘도 화이팅."] },
+    { kind: "cat", name: "냥냥이", sp: "고양이", h: 285, s: "45%", body: "#FFB774", belly: "#FFE8D1", pom: "#B98CFF", fx: "lilac", acc: "crown",
+      lines: ["{v}, 쉬는 것도 실력이야. 잘 쉬고 다시 가자.", "“{d}”, 고양이처럼 조용히, 그래도 확실하게 다가가는 중.", "고마운 사람한테 연락 한 통 해 보는 달이야.", "“{g}”, 기지개 한 번 켜고 시작해 보자.", "네 속도 그대로가 제일 예뻐."] },
+    { kind: "frog", name: "개굴이", sp: "개구리", h: 185, s: "50%", body: "#93D48C", belly: "#E4F6DC", pom: "#3FB6BF", fx: "rain",
+      lines: ["개굴! {v}, 비 오는 날에도 한 뼘씩 뛰는 거야.", "“{d}”, 그 꿈까지 징검다리 하나씩 건너자.", "한 해의 반이 왔어. 여기까지 온 것만 해도 대단해.", "“{g}”, 장마 오기 전에 한 번 몰아서 해 볼까?", "비 그치면 더 높이 뛸 수 있어."] },
+    { kind: "sun", name: "해랑이", sp: "해님", h: 30, s: "85%", body: "#FFD04D", belly: "#FFF0B3", pom: "#FF6B3D", fx: "sparkle",
+      lines: ["{v}, 네 열정은 7월 햇살보다 뜨거워!", "“{d}”, 그 꿈 쪽으로 해가 떠 있어.", "더우면 물 마시고, 그늘에서 쉬고, 다시 반짝.", "“{g}”, 아침 시원할 때 먼저 해치우자.", "오늘 한 일, 작아도 빛나는 거 맞아."] },
+    { kind: "whale", name: "고래미", sp: "고래", h: 205, s: "65%", body: "#80C6F2", belly: "#E6F5FD", pom: "#2F8FD8", fx: "bubble",
+      lines: ["{v}, 크게 숨 한 번 쉬고 깊이 들어가 보자!", "“{d}”, 바다처럼 큰 그 꿈을 품은 너, 멋져.", "파도는 오고 가. 너는 계속 헤엄치면 돼.", "“{g}”, 여름 끝나기 전에 도장 쾅 찍자.", "쉬어 가는 섬도 항해의 일부야."] },
+    { kind: "raccoon", name: "구리", sp: "너구리", h: 255, s: "40%", body: "#BBAA96", belly: "#EFE6DA", pom: "#FFC94A", fx: "star", acc: "moon",
+      lines: ["보름달 뜨는 달이야. {v}, 소원 하나 빌어 볼래?", "“{d}”, 그 소원은 달님한테 내가 대신 말해 둘게.", "추석엔 맛있는 거 먹고 마음도 충전하자.", "“{g}”, 가을 시작이니까 딱 좋은 타이밍이야.", "천천히 가도 길은 없어지지 않아."] },
+    { kind: "fox", name: "여울이", sp: "여우", h: 15, s: "70%", body: "#F2904F", belly: "#FFF2E6", pom: "#E8573A", fx: "leaf", acc: "maple",
+      lines: ["가을바람 타고 가볍게, {v} 화이팅!", "“{d}”, 그 꿈 나도 같이 믿고 있어.", "익어 가는 건 시간이 걸려. 지금 잘 익는 중이야.", "“{g}”, 단풍 지기 전에 하나 해내 보자.", "오늘 고민한 만큼 내일은 가벼워질 거야."] },
+    { kind: "squirrel", name: "도토리", sp: "다람쥐", h: 70, s: "35%", body: "#C99561", belly: "#F4E3CC", pom: "#8DB255", fx: "brownleaf", acc: "beanie",
+      lines: ["{v}, 차곡차곡 모은 게 겨울에 힘이 돼!", "“{d}”, 그 꿈 위해 도토리 하나씩 모으는 중.", "올해 남은 날, 아직 충분히 많아.", "“{g}”, 오늘 한 알만 챙겨 두자.", "모아 둔 거 한 번 세어 봐. 생각보다 많을걸?"] },
+    { kind: "sheep", name: "몽실이", sp: "아기 양", h: 155, s: "40%", body: "#FFFBF3", belly: null, pom: "#E8505B", fx: "snow", acc: "scarf", scarf: ["#2E8B57", "#E8505B"],
+      lines: ["{v}, 올 한 해 정말 수고 많았어. 진짜로.", "“{d}”, 내년엔 그 꿈에 한 뼘 더 가까이.", "따뜻한 데서 올해 잘한 일 세 개만 꼽아 보자.", "“{g}”, 올해 마지막 한 걸음, 같이 가자.", "몽실몽실, 오늘은 너를 칭찬해 주는 날."] }
+  ];
+  const SHOUTS = ["화이팅!", "할 수 있어!", "가 보자!", "최고야!", "잘하고 있어!", "화이팅!"];
+
+  /* ---------- state + storage ---------- */
+  const LS_KEY = "cheer-calendar-v1";
+  let state = { name: "아로", dream: "", goals: {}, notes: {} };
+  function clean(o) {
+    return {
+      name: typeof o.name === "string" ? o.name : "아로",
+      dream: typeof o.dream === "string" ? o.dream : "",
+      goals: o.goals && typeof o.goals === "object" ? { ...o.goals } : {},
+      notes: o.notes && typeof o.notes === "object" ? { ...o.notes } : {}
+    };
+  }
+  try { const raw = localStorage.getItem(LS_KEY); if (raw) state = clean(JSON.parse(raw)); } catch (e) {}
+
+  let docRef = null, saveTimer = null, writing = false, again = false;
+  function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} }
+  async function flush() {
+    if (!docRef) return;
+    if (writing) { again = true; return; }
+    writing = true;
+    try { await docRef.set(JSON.parse(JSON.stringify(state))); setSave("cloud"); }
+    catch (e) { setSave("err"); }
+    writing = false;
+    if (again) { again = false; flush(); }
+  }
+  function saveSoon() { saveLocal(); clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700); }
+  function setSave(mode) {
+    const t = mode === "cloud" ? "내 계정에 저장돼서 다른 기기에서도 이어서 볼 수 있어요"
+      : mode === "err" ? "계정 저장이 잠시 안 됐어요. 이 브라우저에는 저장돼 있어요"
+      : "이 브라우저에 저장돼요";
+    $("saveState").textContent = t; $("saveNote").textContent = t;
+  }
+
+  (async function connect() {
+    try {
+      if (!window.claude || typeof window.claude.use !== "function") return;
+      const user = await window.claude.use("user");
+      const uid = user ? await user.id() : null;
+      const db = await window.claude.use("db");
+      if (!db || !uid) return;
+      docRef = db.doc("data/users/" + uid + "/calendar");
+      const snap = await docRef.get();
+      if (snap.exists) {
+        state = clean(snap.data() || {});
+        saveLocal(); renderAll(false);
+      } else if (state.dream || Object.keys(state.notes).length || Object.keys(state.goals).length || state.name !== "아로") {
+        await flush();
+      }
+      setSave("cloud");
+    } catch (e) { docRef = null; }
+  })();
+
+  /* ---------- helpers ---------- */
+  function $(id) { return document.getElementById(id); }
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function key(y, m, d) { return y + "-" + pad(m + 1) + "-" + pad(d); }
+  function ym(y, m) { return y + "-" + pad(m + 1); }
+  function voc() {
+    const n = (state.name || "").trim() || "친구";
+    const c = n.charCodeAt(n.length - 1);
+    if (c >= 0xAC00 && c <= 0xD7A3) return n + ((c - 0xAC00) % 28 ? "아" : "야");
+    return n;
+  }
+  const WD = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+
+  const now = new Date();
+  let view = { y: now.getFullYear(), m: now.getMonth() };
+  let sel = { y: now.getFullYear(), m: now.getMonth(), d: now.getDate() };
+  let lineIdx = 0, shoutIdx = 0;
+
+  /* ---------- character drawing ---------- */
+  const INK = "#3B2F2C";
+  function star(cx, cy, ro, ri, n, rot) {
+    let p = [];
+    for (let i = 0; i < n * 2; i++) {
+      const r = i % 2 ? ri : ro, a = (Math.PI / n) * i + rot;
+      p.push((cx + r * Math.sin(a)).toFixed(1) + "," + (cy - r * Math.cos(a)).toFixed(1));
+    }
+    return p.join(" ");
+  }
+  function pompom(x, y, c) {
+    let s = "";
+    for (let i = 0; i < 7; i++) {
+      const a = (Math.PI * 2 / 7) * i;
+      s += `<circle cx="${(x + 9 * Math.cos(a)).toFixed(1)}" cy="${(y + 9 * Math.sin(a)).toFixed(1)}" r="7" fill="${c}"/>`;
+    }
+    return s + `<circle cx="${x}" cy="${y}" r="10" fill="${c}"/><circle cx="${x - 4}" cy="${y - 4}" r="3" fill="#fff" opacity=".55"/>`;
+  }
+  function charSVG(c, idx) {
+    const B = c.body, L = c.belly, uid = "c" + idx;
+    let back = "", front = "", top = "", eyes = [[92, 120], [128, 120]], nose = false;
+    const st = `stroke="${INK}" stroke-width="3" stroke-linejoin="round"`;
+    switch (c.kind) {
+      case "bear":
+        back = `<circle cx="70" cy="90" r="18" fill="${B}" ${st}/><circle cx="70" cy="90" r="9" fill="#FFC9D4"/><circle cx="150" cy="90" r="18" fill="${B}" ${st}/><circle cx="150" cy="90" r="9" fill="#FFC9D4"/>`;
+        nose = true; break;
+      case "bunny":
+        back = `<ellipse cx="88" cy="54" rx="13" ry="34" transform="rotate(-10 88 54)" fill="${B}" ${st}/><ellipse cx="88" cy="58" rx="6" ry="22" transform="rotate(-10 88 58)" fill="#FF9DB5"/>
+                <ellipse cx="132" cy="54" rx="13" ry="34" transform="rotate(10 132 54)" fill="${B}" ${st}/><ellipse cx="132" cy="58" rx="6" ry="22" transform="rotate(10 132 58)" fill="#FF9DB5"/>`;
+        nose = true; break;
+      case "sprout":
+        back = `<path d="M110 82 C108 70 112 62 110 50" stroke="#4E9A3C" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <path d="M110 54 C96 40 82 46 80 56 C92 63 104 61 110 54Z" fill="#79C25E" ${st}/>
+                <path d="M110 50 C124 34 140 40 142 50 C132 59 117 57 110 50Z" fill="#8FD46F" ${st}/>`; break;
+      case "chick":
+        back = `<ellipse cx="102" cy="78" rx="5" ry="11" transform="rotate(-20 102 78)" fill="${B}" ${st}/><ellipse cx="110" cy="74" rx="5" ry="12" fill="${B}" ${st}/><ellipse cx="118" cy="78" rx="5" ry="11" transform="rotate(20 118 78)" fill="${B}" ${st}/>`; break;
+      case "cat":
+        back = `<path d="M68 106 L74 62 L104 84Z" fill="${B}" ${st}/><path d="M75 96 L78 74 L95 86Z" fill="#FFB3C1"/>
+                <path d="M152 106 L146 62 L116 84Z" fill="${B}" ${st}/><path d="M145 96 L142 74 L125 86Z" fill="#FFB3C1"/>`;
+        nose = true; break;
+      case "fox":
+        back = `<path d="M62 110 L66 50 L106 82Z" fill="${B}" ${st}/><path d="M70 100 L71 66 L94 84Z" fill="#FFF2E6"/>
+                <path d="M158 110 L154 50 L114 82Z" fill="${B}" ${st}/><path d="M150 100 L149 66 L126 84Z" fill="#FFF2E6"/>`;
+        front = `<ellipse cx="84" cy="142" rx="24" ry="17" fill="${L}"/><ellipse cx="136" cy="142" rx="24" ry="17" fill="${L}"/>`;
+        nose = true; break;
+      case "frog":
+        back = `<circle cx="84" cy="90" r="20" fill="${B}" ${st}/><circle cx="136" cy="90" r="20" fill="${B}" ${st}/>`;
+        front = `<circle cx="84" cy="92" r="12" fill="#fff"/><circle cx="136" cy="92" r="12" fill="#fff"/>`;
+        eyes = [[84, 93], [136, 93]]; break;
+      case "sun": {
+        let rays = "";
+        for (let i = 0; i < 12; i++) {
+          const a = (Math.PI * 2 / 12) * i, a1 = a - .16, a2 = a + .16;
+          const p = (r, t) => (110 + r * Math.sin(t)).toFixed(1) + "," + (130 - r * Math.cos(t)).toFixed(1);
+          rays += `<polygon points="${p(54, a1)} ${p(84, a)} ${p(54, a2)}" fill="#FF9F43" ${st}/>`;
+        }
+        back = rays; break;
+      }
+      case "whale":
+        back = `<path d="M110 80 C109 70 111 62 110 54" stroke="#5AB0E8" stroke-width="5" fill="none" stroke-linecap="round"/>
+                <g class="float"><circle cx="97" cy="50" r="6" fill="#BDE3FA" stroke="${INK}" stroke-width="2"/><circle cx="123" cy="48" r="6" fill="#BDE3FA" stroke="${INK}" stroke-width="2"/><circle cx="110" cy="40" r="7" fill="#BDE3FA" stroke="${INK}" stroke-width="2"/></g>`;
+        front = `<path d="M94 160 h32 M90 168 h40 M96 176 h28" stroke="#A9D9F5" stroke-width="3" stroke-linecap="round"/>`; break;
+      case "raccoon":
+        back = `<circle cx="74" cy="88" r="15" fill="${B}" ${st}/><circle cx="74" cy="88" r="7" fill="#5B4B40"/><circle cx="146" cy="88" r="15" fill="${B}" ${st}/><circle cx="146" cy="88" r="7" fill="#5B4B40"/>`;
+        front = `<ellipse cx="90" cy="120" rx="17" ry="12" transform="rotate(-10 90 120)" fill="#5B4B40"/><ellipse cx="130" cy="120" rx="17" ry="12" transform="rotate(10 130 120)" fill="#5B4B40"/>
+                 <circle cx="92" cy="120" r="7" fill="#fff"/><circle cx="128" cy="120" r="7" fill="#fff"/>`;
+        nose = true; break;
+      case "squirrel":
+        back = `<ellipse cx="176" cy="118" rx="26" ry="50" transform="rotate(18 176 118)" fill="#B9824F" ${st}/><ellipse cx="178" cy="112" rx="13" ry="34" transform="rotate(18 178 112)" fill="#D6A877"/>
+                <path d="M74 98 Q70 70 96 84Z" fill="${B}" ${st}/><path d="M146 98 Q150 70 124 84Z" fill="${B}" ${st}/>`;
+        nose = true; break;
+      case "sheep": {
+        let fl = "";
+        for (let i = 0; i <= 8; i++) {
+          const a = Math.PI * (1.12 + .76 * i / 8);
+          fl += `<circle cx="${(110 + 58 * Math.cos(a)).toFixed(1)}" cy="${(132 + 56 * Math.sin(a)).toFixed(1)}" r="16" fill="${B}" ${st}/>`;
+        }
+        back = fl;
+        front = `<ellipse cx="110" cy="128" rx="36" ry="30" fill="#F6E1C9"/>
+                 <circle cx="64" cy="108" r="12" fill="#D9B38C" ${st}/><path d="M64 108 m-5 0 a5 5 0 1 0 5 -5" fill="none" stroke="${INK}" stroke-width="2"/>
+                 <circle cx="156" cy="108" r="12" fill="#D9B38C" ${st}/><path d="M156 108 m5 0 a5 5 0 1 1 -5 -5" fill="none" stroke="${INK}" stroke-width="2"/>`;
+        break;
+      }
+    }
+
+    // accessories
+    if (c.acc === "scarf") {
+      const [a, b] = c.scarf;
+      top += `<g clip-path="url(#${uid}b)"><rect x="40" y="150" width="140" height="17" fill="${a}"/>
+               <rect x="60" y="150" width="9" height="17" fill="${b}"/><rect x="88" y="150" width="9" height="17" fill="${b}"/><rect x="116" y="150" width="9" height="17" fill="${b}"/><rect x="144" y="150" width="9" height="17" fill="${b}"/></g>
+              <path d="M56 150 Q110 160 164 150 M56 167 Q110 177 164 167" fill="none" stroke="${INK}" stroke-width="2.5" clip-path="url(#${uid}b)"/>
+              <rect x="128" y="160" width="15" height="28" rx="3" transform="rotate(8 135 174)" fill="${a}" ${st}/>`;
+    }
+    if (c.acc === "heart") {
+      top += `<g class="float"><path d="M168 82 C156 72 152 62 160 56 C165 52 170 55 172 60 C174 55 179 52 184 56 C192 62 186 72 172 82Z" transform="translate(-4 -6)" fill="#FF6F91" ${st}/></g>`;
+    }
+    if (c.acc === "shell") {
+      top += `<path d="M54 146 L66 136 L78 148 L90 136 L102 148 L114 136 L126 148 L138 136 L150 148 L166 138 C170 196 50 196 54 146Z" fill="#FFFDF5" ${st}/>
+              <path d="M76 168 l6 4 M136 172 l6 -4" stroke="#E8DFC8" stroke-width="3" stroke-linecap="round"/>`;
+    }
+    if (c.acc === "crown") {
+      const cols = ["#FF8FB1", "#FFD36E", "#B39DFF", "#8FD3FF", "#FF8FB1"];
+      for (let i = 0; i < 5; i++) {
+        const a = Math.PI * (1.2 + .6 * i / 4), x = 110 + 50 * Math.cos(a), y = 132 + 52 * Math.sin(a) + 4;
+        let f = "";
+        for (let k = 0; k < 5; k++) { const t = (Math.PI * 2 / 5) * k; f += `<circle cx="${(x + 5 * Math.cos(t)).toFixed(1)}" cy="${(y + 5 * Math.sin(t)).toFixed(1)}" r="4.2" fill="${cols[i]}" stroke="${INK}" stroke-width="1.2"/>`; }
+        top += f + `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.8" fill="#FFF3B0"/>`;
+      }
+    }
+    if (c.acc === "maple") {
+      top += `<path d="M146 96 l8 12" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/><polygon points="${star(144, 88, 16, 8, 5, .3)}" fill="#E8573A" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>`;
+    }
+    if (c.acc === "beanie") {
+      top += `<path d="M58 112 C56 60 164 60 162 112 Z" fill="#E07A5F" ${st}/>
+              <rect x="54" y="102" width="112" height="16" rx="8" fill="#F2CC8F" ${st}/>
+              <path d="M74 102 v16 M90 102 v16 M106 102 v16 M122 102 v16 M138 102 v16 M154 102 v16" stroke="#D9AE6E" stroke-width="2"/>
+              <circle cx="110" cy="62" r="11" fill="#F4F1DE" ${st}/>`;
+      eyes = [[92, 128], [128, 128]];
+    }
+
+    const mouthY = c.acc === "beanie" ? 142 : 136;
+    const mouthCol = c.mouth || "#C8414F";
+    const mouth = c.mouth
+      ? `<path d="M100 ${mouthY} L110 ${mouthY - 5} L120 ${mouthY} L110 ${mouthY + 12}Z" fill="${mouthCol}" ${st}/><path d="M100 ${mouthY} L120 ${mouthY}" stroke="${INK}" stroke-width="2"/>`
+      : `<path d="M98 ${mouthY} Q110 ${mouthY + 22} 122 ${mouthY} Z" fill="${mouthCol}" ${st}/><path d="M104 ${mouthY + 9} Q110 ${mouthY + 4} 116 ${mouthY + 9} Q110 ${mouthY + 15} 104 ${mouthY + 9}Z" fill="#FF8A93"/>`;
+    const noseEl = nose ? `<ellipse cx="110" cy="${mouthY - 7}" rx="4.5" ry="3.2" fill="${INK}"/>` : "";
+    const eyeEls = eyes.map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="5" ry="6.2" fill="${INK}"/><circle cx="${x + 1.8}" cy="${y - 2.4}" r="2" fill="#fff"/>`).join("");
+    const cheekY = (c.acc === "beanie" ? 138 : 132);
+    const cheeks = c.kind === "frog" ? `<ellipse cx="80" cy="128" rx="8" ry="5" fill="#FF8FA3" opacity=".55"/><ellipse cx="140" cy="128" rx="8" ry="5" fill="#FF8FA3" opacity=".55"/>`
+      : `<ellipse cx="78" cy="${cheekY}" rx="8" ry="5" fill="#FF8FA3" opacity=".6"/><ellipse cx="142" cy="${cheekY}" rx="8" ry="5" fill="#FF8FA3" opacity=".6"/>`;
+    const arm = (sx, sy, hx, hy) =>
+      `<path d="M${sx} ${sy} Q${(sx + hx) / 2 + (hx < 110 ? -4 : 4)} ${(sy + hy) / 2} ${hx} ${hy}" stroke="${INK}" stroke-width="20" fill="none" stroke-linecap="round"/>
+       <path d="M${sx} ${sy} Q${(sx + hx) / 2 + (hx < 110 ? -4 : 4)} ${(sy + hy) / 2} ${hx} ${hy}" stroke="${B}" stroke-width="14" fill="none" stroke-linecap="round"/>`;
+
+    return `<svg viewBox="0 0 220 210" role="img" aria-label="${c.sp} ${c.name}" xmlns="http://www.w3.org/2000/svg">
+      <defs><clipPath id="${uid}b"><ellipse cx="110" cy="132" rx="56" ry="54"/></clipPath></defs>
+      <ellipse class="shadow" cx="110" cy="196" rx="50" ry="7" fill="${INK}"/>
+      <g class="bob">
+        ${back}
+        <g class="armL">${arm(70, 128, 34, 82)}${pompom(30, 76, c.pom)}</g>
+        <g class="armR">${arm(150, 128, 186, 82)}${pompom(190, 76, c.pom)}</g>
+        <ellipse cx="90" cy="186" rx="14" ry="8" fill="${B}" ${st}/><ellipse cx="130" cy="186" rx="14" ry="8" fill="${B}" ${st}/>
+        <ellipse cx="110" cy="132" rx="56" ry="54" fill="${B}" ${st}/>
+        ${L ? `<ellipse cx="110" cy="156" rx="32" ry="24" fill="${L}" clip-path="url(#${uid}b)"/>` : ""}
+        <ellipse cx="86" cy="98" rx="12" ry="6" transform="rotate(-30 86 98)" fill="#fff" opacity=".45"/>
+        ${front}
+        ${cheeks}${eyeEls}${noseEl}${mouth}
+        ${top}
+      </g>
+    </svg>`;
+  }
+
+  /* ---------- particles ---------- */
+  const SHAPES = {
+    snow: () => `<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#fff" stroke="rgba(110,130,180,.4)"/></svg>`,
+    heart: () => `<svg viewBox="0 0 10 10"><path d="M5 9 C1 6 0 4 1.5 2.5 C3 1 4.5 1.8 5 3 C5.5 1.8 7 1 8.5 2.5 C10 4 9 6 5 9Z" fill="#FF7D9C"/></svg>`,
+    petal: () => `<svg viewBox="0 0 10 10"><ellipse cx="5" cy="5" rx="3" ry="4.6" fill="#FFB3C7"/></svg>`,
+    forsythia: () => `<svg viewBox="0 0 10 10"><g fill="#FFCF33"><ellipse cx="5" cy="2.6" rx="1.6" ry="2.6"/><ellipse cx="5" cy="7.4" rx="1.6" ry="2.6"/><ellipse cx="2.6" cy="5" rx="2.6" ry="1.6"/><ellipse cx="7.4" cy="5" rx="2.6" ry="1.6"/></g></svg>`,
+    lilac: () => `<svg viewBox="0 0 10 10"><g fill="#C3A0FF"><circle cx="5" cy="2.4" r="2"/><circle cx="7.5" cy="4.3" r="2"/><circle cx="6.5" cy="7.4" r="2"/><circle cx="3.5" cy="7.4" r="2"/><circle cx="2.5" cy="4.3" r="2"/></g><circle cx="5" cy="5.2" r="1.3" fill="#FFF3B0"/></svg>`,
+    rain: () => `<svg viewBox="0 0 10 10"><line x1="6" y1="0" x2="4" y2="10" stroke="#5FA9D1" stroke-width="1.3" stroke-linecap="round"/></svg>`,
+    sparkle: () => `<svg viewBox="0 0 10 10"><path d="M5 0 L6.2 3.8 L10 5 L6.2 6.2 L5 10 L3.8 6.2 L0 5 L3.8 3.8Z" fill="#FFA928"/></svg>`,
+    bubble: () => `<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="rgba(255,255,255,.25)" stroke="#4FA6DD" stroke-width="1"/></svg>`,
+    star: () => `<svg viewBox="0 0 10 10"><path d="M5 0 L6.2 3.8 L10 5 L6.2 6.2 L5 10 L3.8 6.2 L0 5 L3.8 3.8Z" fill="#FFD966"/></svg>`,
+    leaf: (i) => `<svg viewBox="0 0 40 40"><polygon points="${star(20, 21, 18, 9, 5, 0)}" fill="${i % 2 ? "#F2A33A" : "#E8613A"}"/></svg>`,
+    brownleaf: (i) => `<svg viewBox="0 0 10 10"><path d="M5 0 C9 3 9 7 5 10 C1 7 1 3 5 0Z" fill="${i % 2 ? "#B07A3C" : "#8DB255"}"/></svg>`
+  };
+  function makeSky(fx) {
+    const sky = $("sky"); let html = "";
+    if (fx === "star") html += `<div class="moon"></div>`;
+    const mode = fx === "rain" ? "rain" : fx === "bubble" ? "rise" : (fx === "sparkle" || fx === "star") ? "twinkle" : "fall";
+    const n = fx === "rain" ? 20 : 14;
+    for (let i = 0; i < n; i++) {
+      const left = (i / n) * 100 + Math.random() * (100 / n);
+      const sz = fx === "rain" ? 14 : fx === "leaf" ? 13 + Math.random() * 6 : 7 + Math.random() * 7;
+      const dur = mode === "rain" ? 1.1 + Math.random() * .7 : mode === "twinkle" ? 1.8 + Math.random() * 2 : 7 + Math.random() * 6;
+      const del = -Math.random() * dur;
+      let style = `left:${left.toFixed(1)}%;--sz:${sz.toFixed(1)}px;--dur:${dur.toFixed(2)}s;--del:${del.toFixed(2)}s;`;
+      if (mode === "twinkle") style += `top:${(5 + Math.random() * 80).toFixed(1)}%;`;
+      html += `<span class="p ${mode}" style="${style}">${SHAPES[fx](i)}</span>`;
+    }
+    sky.innerHTML = html;
+  }
+
+  /* ---------- cheer logic ---------- */
+  function goalText() { return (state.goals[ym(view.y, view.m)] || "").trim(); }
+  function lines() {
+    const c = CREW[view.m], d = (state.dream || "").trim(), g = goalText();
+    let L = c.lines.filter(t => (d || !t.includes("{d}")) && (g || !t.includes("{g}")));
+    if (!d) L = ["{v}, 네 꿈이 뭐야? 알려 주면 매달 내가 크게 불러 줄게!"].concat(L);
+    return L.map(t => t.split("{v}").join(voc()).split("{d}").join(d).split("{g}").join(g));
+  }
+  function showLine(animate) {
+    const L = lines(), b = $("bubble");
+    b.textContent = L[lineIdx % L.length];
+    if (animate) { b.classList.remove("fade"); void b.offsetWidth; b.classList.add("fade"); }
+    $("askDream").hidden = !!(state.dream || "").trim();
+  }
+  function shout(text) {
+    const s = $("shout");
+    s.textContent = text;
+    s.classList.remove("pop"); void s.offsetWidth; s.classList.add("pop");
+  }
+  function burst() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const host = $("burst"), c = CREW[view.m];
+    const cols = [c.pom, "#FFD23F", "#FF7D9C", "#7CC4F2", "#8FD46F"];
+    let html = "";
+    for (let i = 0; i < 14; i++) {
+      const a = Math.random() * Math.PI * 2, r = 60 + Math.random() * 60;
+      html += `<i style="--c:${cols[i % cols.length]};--dx:${(Math.cos(a) * r).toFixed(0)}px;--dy:${(Math.sin(a) * r - 30).toFixed(0)}px"></i>`;
+    }
+    host.innerHTML = html;
+    setTimeout(() => { host.innerHTML = ""; }, 950);
+  }
+  function cheer(customShout) {
+    lineIdx++; shoutIdx++;
+    shout(customShout || SHOUTS[shoutIdx % SHOUTS.length]);
+    showLine(true); burst();
+    const btn = $("charBtn");
+    btn.classList.remove("jump"); void btn.offsetWidth; btn.classList.add("jump");
+    clearTimeout(cheer.t); cheer.t = setTimeout(() => btn.classList.remove("jump"), 650);
+  }
+
+  /* ---------- render ---------- */
+  function renderStage(animate) {
+    const c = CREW[view.m];
+    document.documentElement.style.setProperty("--h", c.h);
+    document.documentElement.style.setProperty("--s", c.s);
+    $("tag").textContent = `${view.m + 1}월 응원단 · ${c.sp} ${c.name}`;
+    $("charHost").innerHTML = charSVG(c, view.m);
+    if (animate) { const s = $("charHost").firstElementChild; s.classList.add("enter"); }
+    $("charBtn").setAttribute("aria-label", `응원 받기: ${c.sp} ${c.name}`);
+    makeSky(c.fx);
+    $("goalLabel").textContent = `${view.m + 1}월 목표`;
+    const gi = $("goal"); if (document.activeElement !== gi) gi.value = state.goals[ym(view.y, view.m)] || "";
+    lineIdx = 0; shoutIdx = 0;
+    shout("화이팅!"); showLine(animate);
+  }
+  function renderHeader() {
+    $("yr").textContent = view.y + "년";
+    $("mo").textContent = (view.m + 1) + "월";
+  }
+  function renderGrid() {
+    const g = $("grid"), first = new Date(view.y, view.m, 1).getDay();
+    const days = new Date(view.y, view.m + 1, 0).getDate();
+    const prevDays = new Date(view.y, view.m, 0).getDate();
+    const total = Math.ceil((first + days) / 7) * 7;
+    const tk = key(now.getFullYear(), now.getMonth(), now.getDate());
+    const sk = key(sel.y, sel.m, sel.d);
+    let html = "";
+    for (let i = 0; i < total; i++) {
+      const dow = i % 7;
+      if (i < first || i >= first + days) {
+        const n = i < first ? prevDays - first + i + 1 : i - first - days + 1;
+        html += `<button class="cell other" tabindex="-1" aria-hidden="true"><span class="num">${n}</span></button>`;
+        continue;
+      }
+      const d = i - first + 1, k = key(view.y, view.m, d), hol = HOLIDAYS[k];
+      const cls = ["cell", dow === 0 ? "sun" : "", dow === 6 ? "sat" : "", hol ? "hol" : "", k === tk ? "today" : "", k === sk ? "sel" : ""].join(" ");
+      const memo = (state.notes[k] || "").trim();
+      const label = `${view.m + 1}월 ${d}일 ${WD[dow]}${hol ? ", " + hol : ""}${memo ? ", 메모 있음" : ""}`;
+      html += `<button class="${cls}" data-d="${d}" aria-label="${label}"${k === sk ? ' aria-current="date"' : ""}><span class="num">${d}</span>${hol ? `<span class="hn">${hol}</span>` : ""}${memo ? `<span class="dot"></span>` : ""}</button>`;
+    }
+    g.innerHTML = html;
+  }
+  function renderDay() {
+    const dow = new Date(sel.y, sel.m, sel.d).getDay(), k = key(sel.y, sel.m, sel.d), hol = HOLIDAYS[k];
+    $("dayTitle").textContent = `${sel.m + 1}월 ${sel.d}일 ${WD[dow]}`;
+    const hc = $("dayHol"); hc.hidden = !hol; hc.textContent = hol || "";
+    const memo = $("memo"); if (document.activeElement !== memo) memo.value = state.notes[k] || "";
+  }
+  function renderAll(animate) { renderHeader(); renderStage(animate); renderGrid(); renderDay(); }
+
+  function go(delta) {
+    let m = view.m + delta, y = view.y;
+    if (m < 0) { m = 11; y--; } if (m > 11) { m = 0; y++; }
+    view = { y, m };
+    sel = (y === now.getFullYear() && m === now.getMonth()) ? { y, m, d: now.getDate() } : { y, m, d: 1 };
+    renderAll(true);
+  }
+
+  /* ---------- events ---------- */
+  $("prev").addEventListener("click", () => go(-1));
+  $("next").addEventListener("click", () => go(1));
+  $("todayBtn").addEventListener("click", () => {
+    view = { y: now.getFullYear(), m: now.getMonth() };
+    sel = { y: view.y, m: view.m, d: now.getDate() };
+    renderAll(true);
+  });
+  $("charBtn").addEventListener("click", () => cheer());
+  $("moreBtn").addEventListener("click", () => cheer());
+  $("grid").addEventListener("click", e => {
+    const b = e.target.closest(".cell[data-d]"); if (!b) return;
+    sel = { y: view.y, m: view.m, d: +b.dataset.d };
+    renderGrid(); renderDay();
+  });
+  $("memo").addEventListener("input", e => {
+    const k = key(sel.y, sel.m, sel.d), v = e.target.value;
+    const had = !!(state.notes[k] || "").trim();
+    if (v.trim()) state.notes[k] = v; else delete state.notes[k];
+    if (had !== !!v.trim()) renderGrid();
+    saveSoon();
+  });
+  $("goal").addEventListener("input", e => {
+    const k = ym(view.y, view.m), v = e.target.value;
+    if (v.trim()) state.goals[k] = v; else delete state.goals[k];
+    saveSoon();
+  });
+  $("goal").addEventListener("change", () => {
+    const L = lines(), idx = L.findIndex(t => goalText() && t.includes(goalText()));
+    if (idx >= 0) { lineIdx = idx - 1; cheer("접수 완료!"); } else showLine(true);
+  });
+  $("goal").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
+
+  // swipe months
+  let sx = null, sy = null;
+  $("cal").addEventListener("touchstart", e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, { passive: true });
+  $("cal").addEventListener("touchend", e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.4) go(dx < 0 ? 1 : -1);
+    sx = sy = null;
+  });
+  document.addEventListener("keydown", e => {
+    if (!$("sheetWrap").hidden) { if (e.key === "Escape") closeSheet(); return; }
+    if (e.target.closest("input, textarea")) return;
+    if (e.key === "ArrowLeft") go(-1);
+    if (e.key === "ArrowRight") go(1);
+  });
+
+  // dream sheet
+  function openSheet() {
+    $("nameIn").value = state.name || "";
+    $("dreamIn").value = state.dream || "";
+    $("sheetWrap").hidden = false;
+    setTimeout(() => $("dreamIn").focus(), 50);
+  }
+  function closeSheet() { $("sheetWrap").hidden = true; $("dreamBtn").focus(); }
+  $("dreamBtn").addEventListener("click", openSheet);
+  $("askDream").addEventListener("click", openSheet);
+  $("backdrop").addEventListener("click", closeSheet);
+  $("cancelBtn").addEventListener("click", closeSheet);
+  $("saveBtn").addEventListener("click", () => {
+    state.name = $("nameIn").value.trim() || "아로";
+    state.dream = $("dreamIn").value.trim();
+    saveSoon(); closeSheet();
+    lineIdx = 0;
+    const L = lines(), idx = state.dream ? L.findIndex(t => t.includes(state.dream)) : 0;
+    lineIdx = Math.max(0, idx) - 1;
+    cheer(state.dream ? "꿈 접수 완료!" : "화이팅!");
+  });
+
+  renderAll(true);
+})();
+</script>
+</body>
+</html>
