@@ -3,165 +3,167 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#F2904F">
+<meta name="theme-color" content="#EFE9FF">
 <title>화이팅 달력</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Gaegu:wght@700&family=Gothic+A1:wght@400;600;800&display=swap">
 <style>
-/* Layout: one phone-width column. Cheer stage (character + bubble) on top, month grid, then the selected day's memo. Month hue (--h) drives every token. */
+/* Layout: diary-sticker page. Lavender dot-grid paper, thick ink outlines, hard offset shadows; the cheer card takes each month's candy color. Single deliberate light look. */
 :root {
-  --h: 15; --s: 65%;
-  --bg: hsl(var(--h) 35% 97%);
-  --surface: hsl(var(--h) 40% 99.5%);
-  --ink: hsl(var(--h) 22% 16%);
-  --muted: hsl(var(--h) 10% 42%);
-  --line: hsl(var(--h) 22% 88%);
-  --accent: hsl(var(--h) var(--s) 46%);
-  --accent-ink: hsl(var(--h) 40% 99%);
-  --soft: hsl(var(--h) 75% 91%);
-  --soft2: hsl(calc(var(--h) + 30) 80% 95%);
-  --sun: hsl(358 70% 50%);
-  --sat: hsl(218 70% 50%);
-  --shadow: hsl(var(--h) 30% 30% / .12);
-  --font-display: "Jua", "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --paper: #EFE9FF;
+  --dot: rgba(27, 21, 48, .13);
+  --ink: #1B1530;
+  --sub: #6A5F86;
+  --white: #FFFFFF;
+  --note: #FFFDF6;
+  --pink: #FF4FA3;
+  --pink-text: #E8338A;
+  --lime: #C8F23C;
+  --butter: #FFE45C;
+  --butter-soft: #FFF4B8;
+  --blue: #2B8FD6;
+  --rule: rgba(43, 143, 214, .28);
+  --card: #FFC9A8;
+  --font-display: "Bagel Fat One", "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-hand: "Gaegu", "Gothic A1", "Apple SD Gothic Neo", sans-serif;
+  --font-body: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: hsl(var(--h) 18% 9%);
-    --surface: hsl(var(--h) 16% 13%);
-    --ink: hsl(var(--h) 25% 93%);
-    --muted: hsl(var(--h) 10% 66%);
-    --line: hsl(var(--h) 12% 23%);
-    --accent: hsl(var(--h) var(--s) 66%);
-    --accent-ink: hsl(var(--h) 35% 10%);
-    --soft: hsl(var(--h) 32% 20%);
-    --soft2: hsl(calc(var(--h) + 30) 28% 15%);
-    --sun: hsl(358 85% 72%);
-    --sat: hsl(215 90% 74%);
-    --shadow: hsl(0 0% 0% / .35);
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: hsl(var(--h) 18% 9%);
-  --surface: hsl(var(--h) 16% 13%);
-  --ink: hsl(var(--h) 25% 93%);
-  --muted: hsl(var(--h) 10% 66%);
-  --line: hsl(var(--h) 12% 23%);
-  --accent: hsl(var(--h) var(--s) 66%);
-  --accent-ink: hsl(var(--h) 35% 10%);
-  --soft: hsl(var(--h) 32% 20%);
-  --soft2: hsl(calc(var(--h) + 30) 28% 15%);
-  --sun: hsl(358 85% 72%);
-  --sat: hsl(215 90% 74%);
-  --shadow: hsl(0 0% 0% / .35);
-  color-scheme: dark;
-}
-
 * { box-sizing: border-box; }
-html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
-body { margin: 0; }
 [hidden] { display: none !important; }
+html { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 body {
-  background: var(--bg); color: var(--ink);
-  font-family: var(--font-body); font-size: 15px; line-height: 1.5;
-  word-break: keep-all; transition: background .5s ease;
-  -webkit-tap-highlight-color: transparent;
+  margin: 0;
+  background-color: var(--paper);
+  background-image: radial-gradient(var(--dot) 1.2px, transparent 1.3px);
+  background-size: 18px 18px;
+  color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  word-break: keep-all; -webkit-tap-highlight-color: transparent;
 }
 button, input, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
-:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--pink); outline-offset: 3px; }
 
 .app {
-  max-width: 480px; margin: 0 auto;
+  max-width: 460px; margin: 0 auto;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 14px 28px;
-  display: flex; flex-direction: column; gap: 14px;
+  padding-block: 18px 32px;
+  display: flex; flex-direction: column; gap: 18px;
 }
+
+/* chunky controls */
+.chunk {
+  border: 2px solid var(--ink); background: var(--white); color: var(--ink);
+  box-shadow: 3px 3px 0 var(--ink); transition: transform .08s, box-shadow .08s;
+}
+.chunk:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
 
 /* header */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.month-nav { display: flex; align-items: center; gap: 6px; }
-.round {
-  width: 40px; height: 40px; border-radius: 50%;
-  border: 1px solid var(--line); background: var(--surface);
-  display: grid; place-items: center; font-size: 20px; line-height: 1;
+.logo {
+  font-family: var(--font-display); font-size: 15px; background: var(--lime);
+  border: 2px solid var(--ink); border-radius: 999px; padding: 5px 13px 4px;
+  transform: rotate(-4deg); box-shadow: 2px 2px 0 var(--ink); white-space: nowrap;
 }
-.title { min-width: 92px; text-align: center; }
-.title .yr { display: block; font-size: 12.5px; color: var(--muted); letter-spacing: .04em; font-variant-numeric: tabular-nums; }
-.title .mo { display: block; font-family: var(--font-display); font-size: 38px; line-height: 1; color: var(--ink); }
-.actions { display: flex; gap: 6px; }
+.actions { display: flex; gap: 8px; }
 .pill {
-  height: 36px; padding: 0 14px; border-radius: 999px;
-  border: 1px solid var(--line); background: var(--surface);
-  font-size: 14px; font-weight: 500; white-space: nowrap;
+  height: 40px; padding: 0 15px; border-radius: 999px;
+  font-weight: 800; font-size: 14px; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 5px;
 }
-.pill.solid { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.pill.yellow { background: var(--butter); }
 
-/* cheer stage */
+.month { display: flex; align-items: flex-end; justify-content: space-between; gap: 8px; }
+.month-title { display: flex; align-items: flex-end; gap: 6px; }
+.big {
+  font-family: var(--font-display); font-size: 92px; line-height: .82; color: var(--pink);
+  -webkit-text-stroke: 2.5px var(--ink); text-shadow: 5px 5px 0 var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.big.pop { animation: bigpop .45s cubic-bezier(.3,1.6,.5,1); }
+@keyframes bigpop { from { transform: scale(.6) rotate(-8deg); } to { transform: none; } }
+.month-sub { display: flex; flex-direction: column; gap: 4px; padding-bottom: 4px; }
+.month-sub .yr { font-weight: 800; font-size: 13px; letter-spacing: .08em; font-variant-numeric: tabular-nums; }
+.month-sub .wol { font-family: var(--font-display); font-size: 30px; line-height: 1; }
+.nav { display: flex; gap: 8px; padding-bottom: 6px; }
+.round { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; }
+
+/* cheer card */
 .stage {
-  position: relative; overflow: hidden; border-radius: 26px;
-  background: linear-gradient(160deg, var(--soft), var(--soft2));
-  padding: 14px 14px 16px;
-  display: grid; grid-template-columns: 148px minmax(0, 1fr); gap: 6px 10px; align-items: center;
+  position: relative; border: 2.5px solid var(--ink); border-radius: 30px;
+  background-color: var(--card);
+  background-image: radial-gradient(rgba(255,255,255,.55) 1.6px, transparent 1.7px);
+  background-size: 16px 16px;
+  box-shadow: 6px 6px 0 var(--ink);
+  padding: 22px 16px 16px; display: flex; flex-direction: column; gap: 14px;
+  transition: background-color .4s ease;
 }
-.sky { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-.stage > *:not(.sky) { position: relative; z-index: 1; }
-.tag {
-  grid-column: 1 / -1; justify-self: start;
-  font-size: 12.5px; font-weight: 600; color: var(--accent);
-  background: var(--surface); border-radius: 999px; padding: 3px 11px;
-  box-shadow: 0 1px 0 var(--shadow);
+.tape {
+  position: absolute; top: -13px; left: 50%; width: 104px; height: 26px; margin-left: -52px;
+  transform: rotate(-4deg); z-index: 3; pointer-events: none;
+  background: repeating-linear-gradient(45deg, rgba(255,228,92,.88) 0 8px, rgba(255,255,255,.78) 8px 16px);
+  border-left: 2px dashed rgba(27,21,48,.25); border-right: 2px dashed rgba(27,21,48,.25);
 }
-.char-btn {
-  border: 0; background: none; padding: 26px 0 0; position: relative;
-  display: block; width: 100%; border-radius: 20px;
+.sky { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; border-radius: 28px; container-type: size; }
+.stage > *:not(.sky):not(.tape) { position: relative; z-index: 1; }
+.tags { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.tag-dark { background: var(--ink); color: var(--white); border-radius: 999px; padding: 4px 11px; font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+.tag-light { background: var(--white); border: 2px solid var(--ink); border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 800; }
+.cheer { display: grid; grid-template-columns: 158px minmax(0, 1fr); gap: 10px; align-items: center; }
+.char-btn { position: relative; border: 0; background: none; padding: 34px 0 0; display: block; width: 100%; border-radius: 20px; }
+.sticker {
+  display: block;
+  filter: drop-shadow(3px 0 0 #fff) drop-shadow(-3px 0 0 #fff) drop-shadow(0 3px 0 #fff) drop-shadow(0 -3px 0 #fff) drop-shadow(3px 4px 0 rgba(27,21,48,.85));
 }
-.char-btn svg { display: block; width: 100%; height: auto; overflow: visible; }
+.sticker svg { display: block; width: 100%; height: auto; overflow: visible; }
 .shout {
-  position: absolute; top: 0; left: 50%; z-index: 2;
-  font-family: var(--font-display); font-size: 30px; line-height: 1; white-space: nowrap;
-  color: var(--accent);
-  -webkit-text-stroke: 6px var(--surface); paint-order: stroke fill;
-  transform: translateX(-50%) rotate(-7deg);
+  position: absolute; top: -8px; left: -10px; width: 104px; height: 104px; z-index: 2;
+  transform: rotate(-12deg); pointer-events: none;
+}
+.shout svg { width: 100%; height: 100%; display: block; }
+.shout span {
+  position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+  font-family: var(--font-display); font-size: 19px; line-height: 1.05; color: var(--ink); padding: 0 14px;
 }
 .shout.pop { animation: pop .55s cubic-bezier(.3,1.6,.5,1); }
 @keyframes pop {
-  0% { transform: translateX(-50%) rotate(-7deg) scale(.3); opacity: 0; }
-  100% { transform: translateX(-50%) rotate(-7deg) scale(1); opacity: 1; }
+  0% { transform: rotate(-40deg) scale(.2); opacity: 0; }
+  100% { transform: rotate(-12deg) scale(1); opacity: 1; }
 }
 .say { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .bubble {
-  position: relative; background: var(--surface); border-radius: 18px;
-  padding: 12px 14px; font-family: var(--font-display); font-size: 17px; line-height: 1.5;
-  box-shadow: 0 2px 10px var(--shadow); min-height: 78px; display: flex; align-items: center;
-}
-.bubble::before {
-  content: ""; position: absolute; left: -9px; top: 50%; margin-top: -9px;
-  border: 9px solid transparent; border-left: 0; border-right-color: var(--surface);
+  background: var(--white); border: 2.5px solid var(--ink); border-radius: 22px;
+  box-shadow: 3px 3px 0 var(--ink); padding: 13px 14px;
+  font-family: var(--font-hand); font-weight: 700; font-size: 21px; line-height: 1.32;
+  min-height: 84px; display: flex; align-items: center;
 }
 .bubble.fade { animation: fadein .35s ease; }
-@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes fadein { from { opacity: 0; transform: translateY(5px) rotate(1deg); } to { opacity: 1; transform: none; } }
 .link-btn {
-  align-self: flex-start; border: 0; background: none; padding: 2px 4px;
-  color: var(--accent); font-weight: 600; font-size: 14px; text-decoration: underline; text-underline-offset: 3px;
+  align-self: flex-start; border: 0; background: var(--white); border-radius: 999px; padding: 3px 10px;
+  font-weight: 800; font-size: 13px; color: var(--pink-text); box-shadow: 0 0 0 2px var(--ink);
 }
-.stage-foot { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
-.more { width: 100%; height: 44px; font-size: 15px; font-family: var(--font-display); font-weight: 400; }
+.more {
+  height: 54px; width: 100%; border: 2.5px solid var(--ink); border-radius: 999px;
+  background: var(--pink); color: var(--white); box-shadow: 4px 4px 0 var(--ink);
+  font-family: var(--font-display); font-size: 19px; letter-spacing: .02em;
+  transition: transform .08s, box-shadow .08s;
+}
+.more:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--ink); }
 .goal {
-  display: flex; align-items: center; gap: 8px;
-  background: var(--surface); border-radius: 14px; padding: 4px 4px 4px 12px;
+  display: flex; align-items: center; gap: 8px; background: var(--white);
+  border: 2px dashed var(--ink); border-radius: 16px; padding: 5px 6px;
 }
-.goal label { font-size: 13px; font-weight: 600; color: var(--accent); white-space: nowrap; }
-.goal input {
-  flex: 1; min-width: 0; border: 0; background: transparent; height: 38px; padding: 0 8px;
-  font-size: 15px;
+.goal label {
+  flex: none; background: var(--butter); border: 2px solid var(--ink); border-radius: 10px;
+  padding: 4px 9px; font-size: 12.5px; font-weight: 800; transform: rotate(-2deg);
 }
+.goal input { flex: 1; min-width: 0; border: 0; background: transparent; height: 36px; font-size: 15px; font-weight: 600; }
+.goal input::placeholder { color: var(--sub); font-weight: 400; }
 .goal input:focus { outline: none; }
-.goal:focus-within { box-shadow: 0 0 0 2px var(--accent); }
+.goal:focus-within { border-style: solid; }
 
 /* character motion */
 .bob { animation: bob 1.6s ease-in-out infinite; transform-box: view-box; transform-origin: 110px 186px; }
@@ -171,8 +173,7 @@ button { cursor: pointer; }
 .armR { transform-origin: 152px 128px; animation: waveR .8s ease-in-out infinite alternate; }
 @keyframes waveL { from { transform: rotate(-14deg); } to { transform: rotate(10deg); } }
 @keyframes waveR { from { transform: rotate(14deg); } to { transform: rotate(-10deg); } }
-.shadow { transform-box: view-box; transform-origin: 110px 196px; animation: shadow 1.6s ease-in-out infinite; }
-@keyframes shadow { 0%,100% { transform: scaleX(1); opacity: .22; } 50% { transform: scaleX(.88); opacity: .15; } }
+.shadow { display: none; }
 .float { animation: floaty 2.4s ease-in-out infinite; transform-box: view-box; transform-origin: center; }
 @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 .jump .bob { animation: jump .6s cubic-bezier(.3,.7,.4,1); }
@@ -184,7 +185,7 @@ button { cursor: pointer; }
   100% { transform: translateY(0) scale(1,1); }
 }
 .enter { animation: enter .55s cubic-bezier(.3,1.5,.5,1); }
-@keyframes enter { from { transform: translateY(30px) scale(.7); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes enter { from { transform: translateY(30px) scale(.7) rotate(-8deg); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* particles */
 .p { position: absolute; top: -12%; width: var(--sz, 10px); height: var(--sz, 10px); opacity: .9; }
@@ -200,17 +201,17 @@ button { cursor: pointer; }
 }
 @keyframes rise { 0% { transform: translate(0,0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translate(10px, -120cqh); opacity: 0; } }
 @keyframes twinkle { 0%,100% { transform: scale(.5); opacity: .3; } 50% { transform: scale(1); opacity: 1; } }
-.sky { container-type: size; }
 .moon {
-  position: absolute; top: 12px; right: 16px; width: 46px; height: 46px; border-radius: 50%;
+  position: absolute; top: 14px; right: 18px; width: 44px; height: 44px; border-radius: 50%;
   background: radial-gradient(circle at 38% 38%, #FFF6CF, #FFE08A 60%, #F5C95B);
-  box-shadow: 0 0 24px 6px rgba(255, 224, 138, .45);
+  border: 2px solid var(--ink);
 }
 
 /* burst */
-.burst { position: absolute; left: 50%; top: 58%; width: 0; height: 0; pointer-events: none; z-index: 3; }
+.burst { position: absolute; left: 50%; top: 60%; width: 0; height: 0; pointer-events: none; z-index: 3; }
 .burst i {
-  position: absolute; width: 9px; height: 9px; border-radius: 3px; background: var(--c);
+  position: absolute; width: 10px; height: 10px; border-radius: 3px; background: var(--c);
+  border: 1.5px solid var(--ink);
   animation: burst .9s cubic-bezier(.2,.7,.3,1) forwards;
 }
 @keyframes burst {
@@ -219,82 +220,90 @@ button { cursor: pointer; }
 }
 
 /* calendar */
-.cal {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
-  padding: 10px 8px 8px; touch-action: pan-y;
+.card {
+  border: 2.5px solid var(--ink); border-radius: 28px; background: var(--white);
+  box-shadow: 6px 6px 0 var(--ink);
 }
+.cal { padding: 14px 10px 10px; display: flex; flex-direction: column; gap: 8px; touch-action: pan-y; }
 .wk, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
-.wk span {
-  text-align: center; font-size: 12px; font-weight: 600; color: var(--muted);
-  padding-bottom: 6px; letter-spacing: .04em;
-}
-.wk span:first-child { color: var(--sun); }
-.wk span:last-child { color: var(--sat); }
-.grid { gap: 2px; }
+.wk span { text-align: center; font-family: var(--font-display); font-size: 13px; }
+.wk span:first-child { color: var(--pink-text); }
+.wk span:last-child { color: var(--blue); }
+.grid { gap: 4px; }
 .cell {
-  border: 0; background: none; border-radius: 12px; min-height: 56px; min-width: 0;
-  padding: 5px 1px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  min-width: 0; min-height: 56px; padding: 4px 1px; border-radius: 14px;
+  border: 2px solid transparent; background: transparent;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
+.cell:hover { background: var(--paper); }
 .cell .num {
-  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
-  font-size: 15px; font-weight: 500; font-variant-numeric: tabular-nums;
+  width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums;
 }
-.cell.sun .num, .cell.hol .num { color: var(--sun); }
-.cell.sat .num { color: var(--sat); }
-.cell.today .num { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
-.cell.sel { background: var(--soft); }
+.cell.sat .num { color: var(--blue); }
+.cell.sun .num, .cell.hol .num { color: var(--pink-text); }
+.cell.today .num { background: var(--lime); border: 2px solid var(--ink); color: var(--ink); }
+.cell.sel { background: var(--butter-soft); border-color: var(--ink); }
 .cell .hn {
-  max-width: 100%; font-size: 9.5px; line-height: 1.2; color: var(--sun);
+  max-width: 100%; font-size: 9.5px; font-weight: 800; line-height: 1.1; color: var(--pink-text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 2px;
 }
-.cell .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
-.cell.other { opacity: .32; pointer-events: none; }
+.cell .heart { width: 11px; height: 10px; display: block; }
+.cell.other { visibility: hidden; pointer-events: none; }
 
-/* day panel */
-.day {
-  background: var(--surface); border: 1px solid var(--line); border-radius: 22px;
-  padding: 14px; display: flex; flex-direction: column; gap: 10px;
-}
+/* day memo */
+.day { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .day-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.day-head strong { font-size: 16px; font-weight: 600; }
-.chip { font-size: 12px; font-weight: 600; color: var(--sun); border: 1px solid currentColor; border-radius: 999px; padding: 1px 9px; }
-.day textarea {
-  width: 100%; min-height: 92px; resize: vertical; border: 1px solid var(--line); border-radius: 14px;
-  background: var(--bg); padding: 10px 12px; font-size: 15px; line-height: 1.55;
+.day-head strong { font-family: var(--font-display); font-weight: 400; font-size: 20px; }
+.chip { border: 2px solid var(--ink); border-radius: 999px; padding: 1px 9px; font-size: 12px; font-weight: 800; }
+.chip.today { background: var(--lime); }
+.chip.hol { background: #FFD1E3; }
+.day label { font-size: 12px; font-weight: 800; color: var(--sub); }
+.lined {
+  width: 100%; min-height: 112px; resize: vertical;
+  border: 2px solid var(--ink); border-radius: 16px; padding: 4px 14px;
+  background-color: var(--note);
+  background-image: linear-gradient(transparent 27px, var(--rule) 27px, var(--rule) 28px);
+  background-size: 100% 28px; background-attachment: local;
+  font-family: var(--font-hand); font-weight: 700; font-size: 20px; line-height: 28px; color: var(--ink);
 }
-.day textarea:focus { outline: none; border-color: var(--accent); }
-.foot { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.6; }
+.lined::placeholder { color: var(--sub); opacity: .8; }
+.lined:focus { outline: none; box-shadow: 0 0 0 3px var(--pink); }
+.foot { margin: 0; text-align: center; font-size: 12px; font-weight: 600; color: var(--sub); line-height: 1.6; }
 
-/* sheet */
+/* dream sheet */
 .sheet-wrap { position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center; }
-.backdrop { position: absolute; inset: 0; background: hsl(var(--h) 20% 8% / .45); border: 0; }
+.backdrop { position: absolute; inset: 0; background: rgba(27,21,48,.5); border: 0; }
 .sheet {
-  position: relative; width: 100%; max-width: 480px; background: var(--surface);
-  border-radius: 24px 24px 0 0;
-  padding: 18px max(18px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px));
-  display: flex; flex-direction: column; gap: 14px; animation: up .3s ease;
+  position: relative; width: 100%; max-width: 460px; background: var(--white);
+  border: 2.5px solid var(--ink); border-bottom: 0; border-radius: 32px 32px 0 0;
+  padding: 30px max(20px, env(safe-area-inset-right, 0px)) calc(28px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 16px; animation: up .3s cubic-bezier(.3,1.3,.5,1);
 }
-@keyframes up { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
-.sheet h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 22px; }
-.sheet p { margin: 0; color: var(--muted); font-size: 14px; }
+.sheet .tape { left: 28px; margin-left: 0; transform: rotate(-5deg); background: repeating-linear-gradient(45deg, rgba(200,242,60,.9) 0 8px, rgba(255,255,255,.8) 8px 16px); }
+@keyframes up { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+.sheet h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 27px; line-height: 1.2; }
+.sheet p { margin: 0; font-size: 14px; font-weight: 600; color: var(--sub); line-height: 1.55; }
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field label { font-size: 13px; font-weight: 600; }
-.field input, .field textarea {
-  border: 1px solid var(--line); border-radius: 12px; background: var(--bg);
-  padding: 10px 12px; font-size: 15px;
+.field label { font-size: 13px; font-weight: 800; }
+.field input {
+  height: 48px; border: 2px solid var(--ink); border-radius: 14px; padding: 0 14px;
+  background: var(--note); font-size: 16px; font-weight: 600;
 }
-.field textarea { min-height: 72px; resize: vertical; line-height: 1.5; }
-.field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); }
-.sheet .row { display: flex; gap: 8px; }
-.sheet .row .pill { flex: 1; height: 44px; }
-.save-note { font-size: 12px; color: var(--muted); }
+.field input:focus { outline: none; box-shadow: 0 0 0 3px var(--pink); }
+.sheet .row { display: flex; gap: 10px; padding-top: 4px; }
+.sheet .row .pill { flex: 1; height: 54px; justify-content: center; font-size: 15px; }
+.sheet .row .more { flex: 2; font-size: 18px; }
+.save-note { font-size: 12px; color: var(--sub); }
 
 @media (max-width: 380px) {
-  .stage { grid-template-columns: 116px minmax(0, 1fr); }
-  .shout { font-size: 24px; }
-  .bubble { font-size: 15.5px; padding: 10px 12px; }
-  .title .mo { font-size: 32px; }
-  .pill { padding: 0 11px; font-size: 13px; }
+  .cheer { grid-template-columns: 128px minmax(0, 1fr); }
+  .shout { width: 90px; height: 90px; }
+  .shout span { font-size: 16px; }
+  .bubble { font-size: 18px; padding: 11px 12px; }
+  .big { font-size: 76px; }
+  .pill { padding: 0 12px; font-size: 13px; }
+  .logo { font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition: none !important; }
@@ -305,67 +314,77 @@ button { cursor: pointer; }
 <body>
 <div class="app">
   <header class="top">
-    <div class="month-nav">
-      <button class="round" id="prev" aria-label="이전 달">‹</button>
-      <div class="title" aria-live="polite"><span class="yr" id="yr">2026</span><span class="mo" id="mo">10월</span></div>
-      <button class="round" id="next" aria-label="다음 달">›</button>
-    </div>
+    <span class="logo">화이팅 달력</span>
     <div class="actions">
-      <button class="pill" id="todayBtn">오늘</button>
-      <button class="pill" id="dreamBtn">내 꿈</button>
+      <button class="pill chunk" id="todayBtn">오늘</button>
+      <button class="pill chunk yellow" id="dreamBtn"><svg width="14" height="14" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 0 L6.2 3.8 L10 5 L6.2 6.2 L5 10 L3.8 6.2 L0 5 L3.8 3.8Z" fill="#1B1530"/></svg>내 꿈</button>
     </div>
   </header>
 
+  <div class="month">
+    <div class="month-title" aria-live="polite">
+      <span class="big" id="moNum">10</span>
+      <div class="month-sub"><span class="yr" id="yr">2026</span><span class="wol">월</span></div>
+    </div>
+    <div class="nav">
+      <button class="round chunk" id="prev" aria-label="이전 달"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M11.5 3 L5.5 9 L11.5 15" fill="none" stroke="#1B1530" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <button class="round chunk" id="next" aria-label="다음 달"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M6.5 3 L12.5 9 L6.5 15" fill="none" stroke="#1B1530" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+
   <section class="stage" id="stage" aria-label="이달의 응원 캐릭터">
     <div class="sky" id="sky"></div>
-    <span class="tag" id="tag">10월 응원단</span>
-    <button class="char-btn" id="charBtn" aria-label="캐릭터를 눌러 응원 받기">
-      <span class="shout" id="shout">화이팅!</span>
-      <span id="charHost"></span>
-      <span class="burst" id="burst"></span>
-    </button>
-    <div class="say">
-      <div class="bubble" id="bubble" aria-live="polite"></div>
-      <button class="link-btn" id="askDream" hidden>내 꿈 알려 주기</button>
-    </div>
-    <div class="stage-foot">
-      <button class="pill solid more" id="moreBtn">한 번 더 응원해 줘</button>
-      <div class="goal">
-        <label for="goal" id="goalLabel">10월 목표</label>
-        <input id="goal" type="text" maxlength="60" placeholder="이번 달에 해내고 싶은 한 가지" autocomplete="off">
+    <div class="tape" aria-hidden="true"></div>
+    <div class="tags"><span class="tag-dark" id="tagMonth">10월 응원단</span><span class="tag-light" id="tagName">여우 여울이</span></div>
+    <div class="cheer">
+      <button class="char-btn" id="charBtn" aria-label="캐릭터를 눌러 응원 받기">
+        <span class="shout" id="shout" aria-hidden="true"><svg viewBox="0 0 120 120"><polygon points="60.0,1.0 70.5,14.2 85.6,6.8 89.3,23.3 106.1,23.2 102.3,39.6 117.5,46.9 107.0,60.0 117.5,73.1 102.3,80.4 106.1,96.8 89.3,96.7 85.6,113.2 70.5,105.8 60.0,119.0 49.5,105.8 34.4,113.2 30.7,96.7 13.9,96.8 17.7,80.4 2.5,73.1 13.0,60.0 2.5,46.9 17.7,39.6 13.9,23.2 30.7,23.3 34.4,6.8 49.5,14.2" fill="#C8F23C" stroke="#1B1530" stroke-width="2.5" stroke-linejoin="round"/></svg><span id="shoutText">화이팅!</span></span>
+        <span class="sticker" id="charHost"></span>
+        <span class="burst" id="burst"></span>
+      </button>
+      <div class="say">
+        <div class="bubble" id="bubble" aria-live="polite"></div>
+        <button class="link-btn" id="askDream" hidden>내 꿈 알려 주기</button>
       </div>
+    </div>
+    <button class="more" id="moreBtn">한 번 더 응원해 줘!</button>
+    <div class="goal">
+      <label for="goal" id="goalLabel">10월 목표</label>
+      <input id="goal" type="text" maxlength="60" placeholder="이번 달에 해낼 한 가지" autocomplete="off">
     </div>
   </section>
 
-  <section class="cal" id="cal" aria-label="달력">
+  <section class="card cal" id="cal" aria-label="달력">
     <div class="wk"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div>
     <div class="grid" id="grid"></div>
   </section>
 
-  <section class="day" aria-label="선택한 날짜">
-    <div class="day-head"><strong id="dayTitle">10월 21일 수요일</strong><span class="chip" id="dayHol" hidden></span></div>
-    <textarea id="memo" placeholder="이날 할 일이나 기억할 것을 적어 두세요"></textarea>
+  <section class="card day" aria-label="선택한 날짜">
+    <div class="day-head"><strong id="dayTitle">10월 21일 수요일</strong><span class="chip today" id="dayToday" hidden>오늘</span><span class="chip hol" id="dayHol" hidden></span></div>
+    <label for="memo">이날의 메모</label>
+    <textarea class="lined" id="memo" placeholder="할 일이나 기억할 것을 적어 두세요"></textarea>
   </section>
 
-  <p class="foot"><span id="saveState">이 브라우저에 저장돼요</span><br>공휴일은 2026~2027년이 반영돼 있어요. 달력은 좌우로 밀어서 넘길 수 있어요.</p>
+  <p class="foot"><span id="saveState">이 브라우저에 저장돼요</span><br>캐릭터를 톡 누르면 점프하면서 다른 응원을 해 줘요.<br>공휴일은 2026~2027년 반영, 달력은 좌우로 밀어서 넘겨요.</p>
 </div>
 
 <div class="sheet-wrap" id="sheetWrap" hidden>
   <button class="backdrop" id="backdrop" aria-label="닫기"></button>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-    <h2 id="sheetTitle">응원단에게 알려 주기</h2>
-    <p>적어 둔 꿈은 열두 달 캐릭터가 돌아가며 불러 줘요.</p>
+    <div class="tape" aria-hidden="true"></div>
+    <h2 id="sheetTitle">응원단에게<br>꿈을 알려 줘!</h2>
+    <p>적어 둔 꿈은 열두 달 캐릭터가 돌아가면서 크게 불러 줘요.</p>
     <div class="field">
       <label for="nameIn">불러 줄 이름</label>
       <input id="nameIn" type="text" maxlength="12" autocomplete="off">
     </div>
     <div class="field">
       <label for="dreamIn">내 꿈</label>
-      <textarea id="dreamIn" maxlength="80" placeholder="예: 내 이름으로 된 일로 하루를 채우는 사람"></textarea>
+      <textarea class="lined" id="dreamIn" maxlength="80" placeholder="예: 내 이름으로 된 일로 하루를 채우는 사람"></textarea>
     </div>
     <div class="row">
-      <button class="pill" id="cancelBtn">닫기</button>
-      <button class="pill solid" id="saveBtn">저장하고 응원 받기</button>
+      <button class="pill chunk" id="cancelBtn">닫기</button>
+      <button class="more" id="saveBtn">저장하고 응원 받기</button>
     </div>
     <span class="save-note" id="saveNote"></span>
   </div>
@@ -378,17 +397,17 @@ button { cursor: pointer; }
   /* ---------- holidays (2026, 2027) ---------- */
   const HOLIDAYS = {
     "2026-01-01": "신정", "2026-02-16": "설날 연휴", "2026-02-17": "설날", "2026-02-18": "설날 연휴",
-    "2026-03-01": "삼일절", "2026-03-02": "대체공휴일", "2026-05-01": "노동절", "2026-05-05": "어린이날",
-    "2026-05-24": "부처님오신날", "2026-05-25": "대체공휴일", "2026-06-03": "지방선거", "2026-06-06": "현충일",
-    "2026-07-17": "제헌절", "2026-08-15": "광복절", "2026-08-17": "대체공휴일",
+    "2026-03-01": "삼일절", "2026-03-02": "대체휴일", "2026-05-01": "노동절", "2026-05-05": "어린이날",
+    "2026-05-24": "부처님오신날", "2026-05-25": "대체휴일", "2026-06-03": "지방선거", "2026-06-06": "현충일",
+    "2026-07-17": "제헌절", "2026-08-15": "광복절", "2026-08-17": "대체휴일",
     "2026-09-24": "추석 연휴", "2026-09-25": "추석", "2026-09-26": "추석 연휴",
-    "2026-10-03": "개천절", "2026-10-05": "대체공휴일", "2026-10-09": "한글날", "2026-12-25": "성탄절",
-    "2027-01-01": "신정", "2027-02-06": "설날 연휴", "2027-02-07": "설날", "2027-02-08": "설날 연휴", "2027-02-09": "대체공휴일",
-    "2027-03-01": "삼일절", "2027-05-01": "노동절", "2027-05-03": "대체공휴일", "2027-05-05": "어린이날",
-    "2027-05-13": "부처님오신날", "2027-06-06": "현충일", "2027-07-17": "제헌절", "2027-07-19": "대체공휴일",
-    "2027-08-15": "광복절", "2027-08-16": "대체공휴일", "2027-09-14": "추석 연휴", "2027-09-15": "추석", "2027-09-16": "추석 연휴",
-    "2027-10-03": "개천절", "2027-10-04": "대체공휴일", "2027-10-09": "한글날", "2027-10-11": "대체공휴일",
-    "2027-12-25": "성탄절", "2027-12-27": "대체공휴일"
+    "2026-10-03": "개천절", "2026-10-05": "대체휴일", "2026-10-09": "한글날", "2026-12-25": "성탄절",
+    "2027-01-01": "신정", "2027-02-06": "설날 연휴", "2027-02-07": "설날", "2027-02-08": "설날 연휴", "2027-02-09": "대체휴일",
+    "2027-03-01": "삼일절", "2027-05-01": "노동절", "2027-05-03": "대체휴일", "2027-05-05": "어린이날",
+    "2027-05-13": "부처님오신날", "2027-06-06": "현충일", "2027-07-17": "제헌절", "2027-07-19": "대체휴일",
+    "2027-08-15": "광복절", "2027-08-16": "대체휴일", "2027-09-14": "추석 연휴", "2027-09-15": "추석", "2027-09-16": "추석 연휴",
+    "2027-10-03": "개천절", "2027-10-04": "대체휴일", "2027-10-09": "한글날", "2027-10-11": "대체휴일",
+    "2027-12-25": "성탄절", "2027-12-27": "대체휴일"
   };
 
   /* ---------- twelve cheer friends ---------- */
@@ -418,6 +437,7 @@ button { cursor: pointer; }
     { kind: "sheep", name: "몽실이", sp: "아기 양", h: 155, s: "40%", body: "#FFFBF3", belly: null, pom: "#E8505B", fx: "snow", acc: "scarf", scarf: ["#2E8B57", "#E8505B"],
       lines: ["{v}, 올 한 해 정말 수고 많았어. 진짜로.", "“{d}”, 내년엔 그 꿈에 한 뼘 더 가까이.", "따뜻한 데서 올해 잘한 일 세 개만 꼽아 보자.", "“{g}”, 올해 마지막 한 걸음, 같이 가자.", "몽실몽실, 오늘은 너를 칭찬해 주는 날."] }
   ];
+  const CARD = ["#CFE3FF", "#FFD1E3", "#D6F5C9", "#FFF0A8", "#E6D6FF", "#C9F2EE", "#FFE0A3", "#BFE5FF", "#D9D3FF", "#FFC9A8", "#E8EBC2", "#CDEFDC"];
   const SHOUTS = ["화이팅!", "할 수 있어!", "가 보자!", "최고야!", "잘하고 있어!", "화이팅!"];
 
   /* ---------- state + storage ---------- */
@@ -482,6 +502,7 @@ button { cursor: pointer; }
     if (c >= 0xAC00 && c <= 0xD7A3) return n + ((c - 0xAC00) % 28 ? "아" : "야");
     return n;
   }
+  const HEART = `<svg class="heart" viewBox="0 0 10 9" aria-hidden="true"><path d="M5 8.5 C1 5.6 0 3.8 1.4 2.2 C2.8 .8 4.4 1.4 5 2.6 C5.6 1.4 7.2 .8 8.6 2.2 C10 3.8 9 5.6 5 8.5Z" fill="#FF4FA3" stroke="#1B1530" stroke-width=".9"/></svg>`;
   const WD = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
 
   const now = new Date();
@@ -490,7 +511,7 @@ button { cursor: pointer; }
   let lineIdx = 0, shoutIdx = 0;
 
   /* ---------- character drawing ---------- */
-  const INK = "#3B2F2C";
+  const INK = "#1B1530";
   function star(cx, cy, ro, ri, n, rot) {
     let p = [];
     for (let i = 0; i < n * 2; i++) {
@@ -687,14 +708,15 @@ button { cursor: pointer; }
     $("askDream").hidden = !!(state.dream || "").trim();
   }
   function shout(text) {
-    const s = $("shout");
-    s.textContent = text;
+    const s = $("shout"), t = $("shoutText");
+    t.textContent = text;
+    t.style.fontSize = text.length > 5 ? "15px" : "19px";
     s.classList.remove("pop"); void s.offsetWidth; s.classList.add("pop");
   }
   function burst() {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const host = $("burst"), c = CREW[view.m];
-    const cols = [c.pom, "#FFD23F", "#FF7D9C", "#7CC4F2", "#8FD46F"];
+    const cols = [c.pom, "#C8F23C", "#FF4FA3", "#FFE45C", "#8FD8FF"];
     let html = "";
     for (let i = 0; i < 14; i++) {
       const a = Math.random() * Math.PI * 2, r = 60 + Math.random() * 60;
@@ -715,9 +737,9 @@ button { cursor: pointer; }
   /* ---------- render ---------- */
   function renderStage(animate) {
     const c = CREW[view.m];
-    document.documentElement.style.setProperty("--h", c.h);
-    document.documentElement.style.setProperty("--s", c.s);
-    $("tag").textContent = `${view.m + 1}월 응원단 · ${c.sp} ${c.name}`;
+    $("stage").style.setProperty("--card", CARD[view.m]);
+    $("tagMonth").textContent = `${view.m + 1}월 응원단`;
+    $("tagName").textContent = `${c.sp} ${c.name}`;
     $("charHost").innerHTML = charSVG(c, view.m);
     if (animate) { const s = $("charHost").firstElementChild; s.classList.add("enter"); }
     $("charBtn").setAttribute("aria-label", `응원 받기: ${c.sp} ${c.name}`);
@@ -728,8 +750,10 @@ button { cursor: pointer; }
     shout("화이팅!"); showLine(animate);
   }
   function renderHeader() {
-    $("yr").textContent = view.y + "년";
-    $("mo").textContent = (view.m + 1) + "월";
+    $("yr").textContent = String(view.y);
+    const big = $("moNum");
+    big.textContent = String(view.m + 1);
+    big.classList.remove("pop"); void big.offsetWidth; big.classList.add("pop");
   }
   function renderGrid() {
     const g = $("grid"), first = new Date(view.y, view.m, 1).getDay();
@@ -750,7 +774,7 @@ button { cursor: pointer; }
       const cls = ["cell", dow === 0 ? "sun" : "", dow === 6 ? "sat" : "", hol ? "hol" : "", k === tk ? "today" : "", k === sk ? "sel" : ""].join(" ");
       const memo = (state.notes[k] || "").trim();
       const label = `${view.m + 1}월 ${d}일 ${WD[dow]}${hol ? ", " + hol : ""}${memo ? ", 메모 있음" : ""}`;
-      html += `<button class="${cls}" data-d="${d}" aria-label="${label}"${k === sk ? ' aria-current="date"' : ""}><span class="num">${d}</span>${hol ? `<span class="hn">${hol}</span>` : ""}${memo ? `<span class="dot"></span>` : ""}</button>`;
+      html += `<button class="${cls}" data-d="${d}" aria-label="${label}"${k === sk ? ' aria-current="date"' : ""}><span class="num">${d}</span>${hol ? `<span class="hn">${hol}</span>` : ""}${memo ? HEART : ""}</button>`;
     }
     g.innerHTML = html;
   }
@@ -758,6 +782,7 @@ button { cursor: pointer; }
     const dow = new Date(sel.y, sel.m, sel.d).getDay(), k = key(sel.y, sel.m, sel.d), hol = HOLIDAYS[k];
     $("dayTitle").textContent = `${sel.m + 1}월 ${sel.d}일 ${WD[dow]}`;
     const hc = $("dayHol"); hc.hidden = !hol; hc.textContent = hol || "";
+    $("dayToday").hidden = !(sel.y === now.getFullYear() && sel.m === now.getMonth() && sel.d === now.getDate());
     const memo = $("memo"); if (document.activeElement !== memo) memo.value = state.notes[k] || "";
   }
   function renderAll(animate) { renderHeader(); renderStage(animate); renderGrid(); renderDay(); }
